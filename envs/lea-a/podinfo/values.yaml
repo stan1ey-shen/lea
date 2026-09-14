@@ -2,9 +2,3 @@ podinfo:
   replicaCount: 2
   ui:
     message: "ArgoCD Workshop in lea-a"
-  ingress:
-    hosts:
-      - host: "argocd-workshop.192.168.4.154.sslip.io"
-        paths:
-          - path: "/"
-            pathType: "Prefix"
