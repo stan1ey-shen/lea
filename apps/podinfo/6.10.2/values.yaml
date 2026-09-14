@@ -1,0 +1,13 @@
+podinfo:
+  replicaCount: 2
+  ui:
+    message: "ArgoCD Workshop"
+    color: "#000088"
+  ingress:
+    enabled: true
+    className: nginx
+    hosts:
+      - host: "argocd-workshop-s2a"
+        paths:
+          - path: "/"
+            pathType: "Prefix"

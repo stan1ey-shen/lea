@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: 01-infra-appset
+  namespace: infra-argocd
+  labels:
+    app: infra
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/stan1ey-shen/lea.git
+        revision: HEAD
+        # every app dir has a config.yaml; its keys (e.g. type) become template params
+        files:
+          - path: envs/lea-a/*/config.yaml
+  template:
+    metadata:
+      # e.g. envs/lea-a/podinfo -> lea-a-podinfo
+      name: "{{index .path.segments 1}}-{{.path.basename}}"
+      labels:
+        app: infra
+    spec:
+      project: "default"
+      source:
+        repoURL: https://github.com/stan1ey-shen/lea.git
+        targetRevision: HEAD
+        path: "{{.path.path}}"
+
+      # Destination cluster and namespace to deploy the application
+      destination:
+        name: in-cluster
+        namespace: "default"
+
+      # Sync policy
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          # fix "annotation too long" issue that prevents the resource from being deployed
+          - ServerSideApply=true
+        automated:
+          prune: false
+          selfHeal: false
+  templatePatch: |
+    {{- if eq .type "helm" }}
+    spec:
+      source:
+        path: "apps/{{.path.basename}}/{{.version}}"
+        helm:
+          releaseName: "{{.path.basename}}"
+          # relative to the chart path (apps/<app>/<version>)
+          valueFiles:
+            - "../../../{{.path.path}}/values.yaml"
+    {{- else if eq .type "kustomize" }}
+    spec:
+      source:
+        path: "{{.path.path}}"
+        kustomize:
+          # base is a kustomize Component; env overlay patches are applied after it (requires ArgoCD >= 2.8)
+          components:
+            - "../../../apps/{{.path.basename}}/{{.version}}"
+    {{- else }}
+    {{- fail (printf "unknown type %q in %s/config.yaml, expected helm or kustomize" .type .path.path) }}
+    {{- end }}

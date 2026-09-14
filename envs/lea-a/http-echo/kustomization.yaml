@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# base (apps/http-echo/<version>, a kustomize Component) is added by the ApplicationSet
+# from `version` in config.yaml; do not list it in resources here
+
+# lea-a specific overrides on top of the base
+patches:
+  - target:
+      kind: Deployment
+      name: http-echo
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/args/0
+        value: -text="Hello from lea-a"
+  - target:
+      kind: Ingress
+      name: http-echo
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: argocd-workshop-s3-lea-a

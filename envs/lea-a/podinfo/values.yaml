@@ -1,0 +1,4 @@
+podinfo:
+  replicaCount: 2
+  ui:
+    message: "ArgoCD Workshop in lea-a"
