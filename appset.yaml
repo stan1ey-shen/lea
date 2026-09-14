@@ -23,15 +23,6 @@ spec:
         app: infra
     spec:
       project: "default"
-      source:
-        repoURL: https://github.com/stan1ey-shen/lea.git
-        targetRevision: HEAD
-        path: "{{.path.path}}"
-
-      # Destination cluster and namespace to deploy the application
-      destination:
-        name: in-cluster
-        namespace: "default"
 
       # Sync policy
       syncPolicy:
@@ -52,6 +43,9 @@ spec:
           # relative to the chart path (apps/<app>/<version>)
           valueFiles:
             - "../../../{{.path.path}}/values.yaml"
+      destination:
+        name: in-cluster
+        namespace: "infra-{{.path.basename}}"
     {{- else if eq .type "kustomize" }}
     spec:
       source:
@@ -60,6 +54,9 @@ spec:
           # base is a kustomize Component; env overlay patches are applied after it (requires ArgoCD >= 2.8)
           components:
             - "../../../apps/{{.path.basename}}/{{.version}}"
+      destination:
+        name: in-cluster
+        namespace: "infra-{{.path.basename}}"
     {{- else }}
     {{- fail (printf "unknown type %q in %s/config.yaml, expected helm or kustomize" .type .path.path) }}
     {{- end }}
