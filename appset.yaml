@@ -23,6 +23,10 @@ spec:
         app: infra
     spec:
       project: "default"
+      source:
+        repoURL: https://github.com/stan1ey-shen/lea.git
+        targetRevision: HEAD
+        path: "{{.path.path}}"
       destination:
         name: in-cluster
         namespace: "infra-{{.path.basename}}"
